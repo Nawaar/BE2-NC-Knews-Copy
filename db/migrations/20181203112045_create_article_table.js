@@ -5,8 +5,8 @@ exports.up = function (knex, Promise) {
     articleTable.string('title');
     articleTable.text('body');
     articleTable.integer('votes').defaultTo(0);
-    articleTable.string('topic').references('topics.slug');
-    articleTable.integer('user_id').references('users.user_id');
+    articleTable.string('topic').references('topics.slug').onDelete('CASCADE');
+    articleTable.integer('user_id').references('users.user_id').onDelete('CASCADE');
     // const now = new Date();
     // const year = `${now.getFullYear()}`;
     // let month = `${now.getMonth() + 1}`;

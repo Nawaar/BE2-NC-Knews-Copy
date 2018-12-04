@@ -14,7 +14,8 @@ exports.handle400 = (err, req, res, next) => {
     42703: 'invalid input',
     '22P02': 'invalid input syntax',
   };
-  if (errors[err.code]) res.status(400).json({ msg: errors[err.code] });
+  if (err.status === 400) res.status(400).json({ msg: err.msg });
+  else if (errors[err.code]) res.status(400).json({ msg: errors[err.code] });
   else next(err);
 };
 
