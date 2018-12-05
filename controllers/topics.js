@@ -11,12 +11,16 @@ exports.getTopics = (req, res, next) => {
 };
 
 exports.postTopic = (req, res, next) => {
-  connection
-    .returning('*')
-    .insert(req.body)
-    .into('topics')
-    .then(([topic]) => {
-      res.status(201).json({ topic });
-    })
-    .catch(next);
+  if (req.body.slug && req.body.description) {
+    connection
+      .returning('*')
+      .insert(req.body)
+      .into('topics')
+      .then(([topic]) => {
+        res.status(201).json({ topic });
+      })
+      .catch(next);
+  } else {
+    next({ status: 400, msg: 'invalid input' });
+  }
 };

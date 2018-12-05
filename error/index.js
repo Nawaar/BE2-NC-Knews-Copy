@@ -5,6 +5,8 @@ exports.handle422 = (err, req, res, next) => {
   };
   if (err.table === 'articles' && err.constraint === 'articles_user_id_foreign' && err.code === '23503') {
     res.status(422).json({ msg: 'violates foreign key constraint' });
+  } else if (err.table === 'comments' && err.constraint === 'comments_user_id_foreign' && err.code === '23503') {
+    res.status(422).json({ msg: 'violates foreign key constraint' });
   } else if (errors[err.code]) res.status(422).json({ msg: errors[err.code] });
   else next(err);
 };
@@ -26,5 +28,6 @@ exports.handle405 = (req, res, next) => {
 exports.handle404 = (err, req, res, next) => {
   if (err.status === 404) res.status(404).json({ msg: err.msg });
   else if (err.code === '23503' && err.table === 'articles' && err.constraint === 'articles_topic_foreign') res.status(404).json({ msg: 'Topic not found' });
+  else if (err.code === '23503' && err.table === 'comments' && err.constraint === 'comments_article_id_foreign') res.status(404).json({ msg: 'Article not found' });
   else next(err);
 };

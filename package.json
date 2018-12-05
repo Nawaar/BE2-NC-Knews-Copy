@@ -11,9 +11,9 @@
     "pre-commit": "npm t",
     "posttest": "npm run lint",
     "migrate:make": "knex migrate:make",
-    "migrate:latest": "NOVE_ENV=test knex migrate:latest --env test",
-    "migrate:rollback": "NOVE_ENV=test knex migrate:rollback --env test",
-    "seed:run": "NODE_ENV=test knex seed:run",
+    "migrate:latest": "NOVE_ENV=test knex migrate:latest --env development",
+    "migrate:rollback": "NOVE_ENV=test knex migrate:rollback --env development",
+    "seed:run": "NODE_ENV=development knex seed:run",
     "seed:do": "npm run migrate:rollback && npm run migrate:latest && npm run seed:run"
   },
   "repository": {

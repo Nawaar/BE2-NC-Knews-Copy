@@ -5,14 +5,6 @@ exports.up = function (knex, Promise) {
     commentTable.integer('user_id').references('users.user_id').onDelete('CASCADE');
     commentTable.integer('article_id').references('articles.article_id').onDelete('CASCADE');
     commentTable.integer('votes').defaultTo(0);
-    // const now = new Date();
-    // const year = `${now.getFullYear()}`;
-    // let month = `${now.getMonth() + 1}`;
-    // let date = `${now.getDate()}`;
-    // if (date.length === 1) { date = `0${date}`; }
-    // if (month.length === 1) { month = `0${month}`; }
-    // const psqlDate = `${year}-${month}-${date}`;
-    // commentTable.date('created_at').defaultTo(psqlDate);
     commentTable.timestamp('created_at').defaultTo(knex.fn.now());
     commentTable.text('body');
   });

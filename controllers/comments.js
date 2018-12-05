@@ -1,24 +1,63 @@
 const connection = require('../db/connection');
+const { generalComments } = require('../utility/comments');
 
 exports.getCommentsByArticle = (req, res, next) => {
-  const {
-    limit = 10, sort_by = 'created_at', p = 1, sort_ascending,
-  } = req.query;
-  let order_by = 'desc';
-  if (sort_ascending) {
-    order_by = 'asc';
+  generalComments(req, res, next, true, false);
+};
+
+exports.postComment = (req, res, next) => {
+  if (req.body.body && req.body.user_id) {
+    const toInsert = {
+      ...req.body,
+      ...req.params,
+    };
+    connection
+      .insert(toInsert)
+      .into('comments')
+      .returning('*')
+      .then(([comment]) => {
+        res.status(201).json({ comment });
+      })
+      .catch(next);
+  } else {
+    next({ status: 400, msg: 'invalid input' });
   }
+};
+
+exports.patchCommentVotes = (req, res, next) => {
+  if (req.body.inc_votes) {
+    connection
+      .select('votes')
+      .from('comments')
+      .where({
+        article_id: req.params.article_id,
+        comment_id: req.params.comment_id,
+      })
+      .then(([votes]) => {
+        if (!votes) return Promise.reject({ status: 404, msg: 'Page does not exist' });
+        return connection
+          .from('comments')
+          .where({ comment_id: req.params.comment_id })
+          .update({ votes: votes.votes + req.body.inc_votes });
+      })
+      .then(() => generalComments(req, res, next, false, true))
+      .catch(next);
+  } else {
+    next({ status: 400, msg: 'invalid input' });
+  }
+};
+
+exports.deleteComment = (req, res, next) => {
   connection
-    .select('comment_id', 'votes', 'created_at', 'body', 'username AS author')
     .from('comments')
-    .where({ article_id: req.params.article_id })
-    .join('users', 'users.user_id', 'comments.user_id')
-    .limit(limit)
-    .offset(limit * (p - 1))
-    .orderBy(sort_by, order_by)
-    .then((comments) => {
-      if (comments.length === 0) return Promise.reject({ status: 404, msg: 'Page does not exist' });
-      return res.status(200).json({ comments });
+    .where({
+      article_id: req.params.article_id,
+      comment_id: req.params.comment_id,
+    })
+    .del()
+    .then((amount) => {
+      if (amount === 0) return Promise.reject({ status: 404, msg: 'Page does not exist' });
+      return res.status(200).json({});
     })
     .catch(next);
 };

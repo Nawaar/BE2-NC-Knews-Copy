@@ -45,6 +45,16 @@ describe('/api', () => {
           expect(body.topic.slug).to.equal(topic.slug);
         });
     });
+    it('POST - status 400 when input is not correct if values are missing', () => {
+      const topic = { slug: 'coding' };
+      return request
+        .post(route)
+        .send(topic)
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).to.equal('invalid input');
+        });
+    });
     it('POST - status 422 when slug is not unique and unique key violations occurs', () => {
       const topic = {
         description: 'Not dogs',
@@ -197,6 +207,19 @@ describe('/api', () => {
       it('POST - status 400 when input not in correct format', () => {
         const article = {
           jbhv: 'ljhkgcvhj',
+        };
+        return request
+          .post(`${route}/cats/articles`)
+          .send(article)
+          .expect(400)
+          .then(({ body }) => {
+            expect(body.msg).to.equal('invalid input');
+          });
+      });
+      it('POST - status 400 when input not in correct format as keys is missing', () => {
+        const article = {
+          title: 'Do cats eat?',
+          body: 'Do you have a cat .... yayyyyyyy',
         };
         return request
           .post(`${route}/cats/articles`)
@@ -437,7 +460,302 @@ describe('/api', () => {
           .then(({ body }) => {
             expect(body.msg).to.equal('invalid input');
           }));
+        it('POST - status 201 accepts an object with a user_id and body and responds with the posted comment', () => {
+          const comment = {
+            user_id: 1,
+            body: 'do i even know?',
+          };
+          return request
+            .post(`${articleURL}/2/comments`)
+            .send(comment)
+            .expect(201)
+            .then(({ body }) => {
+              expect(body.comment).to.have.all.keys(['body', 'user_id', 'comment_id', 'votes', 'created_at', 'article_id']);
+              expect(body.comment.article_id).to.equal(2);
+              expect(body.comment.comment_id).to.equal(19);
+              expect(body.comment.body).to.equal(comment.body);
+              expect(body.comment.votes).to.equal(0);
+              expect(body.comment.user_id).to.equal(comment.user_id);
+            });
+        });
+        it('POST - status 404 when article_id does not exist as violates foreign key constraint', () => {
+          const comment = {
+            user_id: 1,
+            body: 'do i even know?',
+          };
+          return request
+            .post(`${articleURL}/200000/comments`)
+            .send(comment)
+            .expect(404)
+            .then(({ body }) => {
+              expect(body.msg).to.equal('Article not found');
+            });
+        });
+        it('POST - status 422 when user_id does not exist as violates foreign key constraint', () => {
+          const comment = {
+            user_id: 198,
+            body: 'do i even know?',
+          };
+          return request
+            .post(`${articleURL}/2/comments`)
+            .send(comment)
+            .expect(422)
+            .then(({ body }) => {
+              expect(body.msg).to.equal('violates foreign key constraint');
+            });
+        });
+        it('POST - status 400 when user_id is not of correct format', () => {
+          const comment = {
+            user_id: 'gfghuljhkgjf',
+            body: 'do i even know?',
+          };
+          return request
+            .post(`${articleURL}/2/comments`)
+            .send(comment)
+            .expect(400)
+            .then(({ body }) => {
+              expect(body.msg).to.equal('invalid input syntax');
+            });
+        });
+        it('POST - status 400 when input not in correct format', () => {
+          const comment = {
+            jhkjgjk: 'gfghuljhkgjf',
+            body: 'do i even know?',
+          };
+          return request
+            .post(`${articleURL}/2/comments`)
+            .send(comment)
+            .expect(400)
+            .then(({ body }) => {
+              expect(body.msg).to.equal('invalid input');
+            });
+        });
+        it('POST - status 400 when input not in correct format as some input is missing', () => {
+          const comment = {
+            body: 'do i even know?',
+          };
+          return request
+            .post(`${articleURL}/2/comments`)
+            .send(comment)
+            .expect(400)
+            .then(({ body }) => {
+              expect(body.msg).to.equal('invalid input');
+            });
+        });
+        it('POST - status 400 when article_id not in correct format', () => {
+          const comment = {
+            user_id: 1,
+            body: 'do i even know?',
+          };
+          return request
+            .post(`${articleURL}/hjgjkghjgj/comments`)
+            .send(comment)
+            .expect(400)
+            .then(({ body }) => {
+              expect(body.msg).to.equal('invalid input syntax');
+            });
+        });
+        it('DELETE - status 405 when invalid method', () => request
+          .delete(`${articleURL}/1/comments`)
+          .expect(405)
+          .then(({ body }) => {
+            expect(body.msg).to.equal('invalid method');
+          }));
+        describe('/:comment_id', () => {
+          it('PATCH - status 200 and accepts an object in form {inc_votes: newVote} and changes vote accordingly', () => {
+            const insert = { inc_votes: -45 };
+            return request
+              .patch(`${articleURL}/1/comments/8`)
+              .send(insert)
+              .expect(200)
+              .then(({ body }) => {
+                expect(body.comment).to.eql({
+                  comment_id: 8,
+                  body: 'Delicious crackerbreads',
+                  author: 'icellusedkars',
+                  votes: -45,
+                  created_at: '2010-11-24T12:36:03.389Z',
+                });
+              });
+          });
+          it('PATCH - status 404 when comment_id does not not exist', () => {
+            const insert = { inc_votes: -45 };
+            return request
+              .patch(`${articleURL}/1/comments/987653`)
+              .send(insert)
+              .expect(404)
+              .then(({ body }) => {
+                expect(body.msg).to.equal('Page does not exist');
+              });
+          });
+          it('PATCH - status 404 when comment_id does not not exist for that article', () => {
+            const insert = { inc_votes: -45 };
+            return request
+              .patch(`${articleURL}/1/comments/1`)
+              .send(insert)
+              .expect(404)
+              .then(({ body }) => {
+                expect(body.msg).to.equal('Page does not exist');
+              });
+          });
+          it('PATCH - status 400 when comment_id is not correct format', () => {
+            const insert = { inc_votes: -45 };
+            return request
+              .patch(`${articleURL}/1/comments/jhgkjh`)
+              .send(insert)
+              .expect(400)
+              .then(({ body }) => {
+                expect(body.msg).to.equal('invalid input syntax');
+              });
+          });
+          it('PATCH - status 404 when article_id does not exist', () => {
+            const insert = { inc_votes: -45 };
+            return request
+              .patch(`${articleURL}/13544/comments/1`)
+              .send(insert)
+              .expect(404)
+              .then(({ body }) => {
+                expect(body.msg).to.equal('Page does not exist');
+              });
+          });
+          it('PATCH - status 400 when article_id is not correct format', () => {
+            const insert = { inc_votes: -45 };
+            return request
+              .patch(`${articleURL}/jhgfjk/comments/2`)
+              .send(insert)
+              .expect(400)
+              .then(({ body }) => {
+                expect(body.msg).to.equal('invalid input syntax');
+              });
+          });
+          it('PATCH - status 400 when input not in correct format', () => {
+            const insert = { intes: 485 };
+            return request
+              .patch(`${articleURL}/1/comments/8`)
+              .send(insert)
+              .expect(400)
+              .then(({ body }) => {
+                expect(body.msg).to.equal('invalid input');
+              });
+          });
+          it('PATCH - status 400 when inc_votes is not of correct format', () => {
+            const insert = { inc_votes: 'ghfkjh' };
+            return request
+              .patch(`${articleURL}/1/comments/8`)
+              .send(insert)
+              .expect(400)
+              .then(({ body }) => {
+                expect(body.msg).to.equal('invalid input syntax');
+              });
+          });
+          it('DELETE - status 200 and should delete given comment and respond with empty object', () => request
+            .delete(`${articleURL}/1/comments/8`)
+            .expect(200)
+            .then(({ body }) => {
+              expect(body).to.eql({});
+            }));
+          it('DELETE - status 404 when comment_id does not not exist', () => request
+            .delete(`${articleURL}/1/comments/987653`)
+            .expect(404)
+            .then(({ body }) => {
+              expect(body.msg).to.equal('Page does not exist');
+            }));
+          it('DELETE - status 404 when comment_id does not not exist for that article', () => request
+            .delete(`${articleURL}/1/comments/1`)
+            .expect(404)
+            .then(({ body }) => {
+              expect(body.msg).to.equal('Page does not exist');
+            }));
+          it('DELETE - status 400 when comment_id is not correct format', () => request
+            .delete(`${articleURL}/1/comments/jhgkjh`)
+            .expect(400)
+            .then(({ body }) => {
+              expect(body.msg).to.equal('invalid input syntax');
+            }));
+          it('DELETE - status 404 when article_id does not exist', () => request
+            .delete(`${articleURL}/13544/comments/1`)
+            .expect(404)
+            .then(({ body }) => {
+              expect(body.msg).to.equal('Page does not exist');
+            }));
+          it('DELETE - status 400 when article_id is not correct format', () => request
+            .delete(`${articleURL}/jhgfjk/comments/2`)
+            .expect(400)
+            .then(({ body }) => {
+              expect(body.msg).to.equal('invalid input syntax');
+            }));
+          it('GET - status 405 when invalid method', () => request
+            .get(`${articleURL}/1/comments/8`)
+            .expect(405)
+            .then(({ body }) => {
+              expect(body.msg).to.equal('invalid method');
+            }));
+        });
       });
     });
   });
+  describe('/users', () => {
+    it('GET - status 200 and should respond with an array of user objects', () => request
+      .get('/api/users')
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.users).to.have.length(3);
+        expect(body.users[1]).to.have.all.keys(['user_id', 'username', 'avatar_url', 'name']);
+        expect(body.users[0]).to.eql({
+          user_id: 1,
+          username: 'butter_bridge',
+          name: 'jonny',
+          avatar_url: 'https://www.healthytherapies.com/wp-content/uploads/2016/06/Lime3.jpg',
+        });
+      }));
+    it('DELETE - status 405 when invalid method', () => request
+      .delete('/api/users')
+      .expect(405)
+      .then(({ body }) => {
+        expect(body.msg).to.equal('invalid method');
+      }));
+    describe('/:user_id', () => {
+      it('GET - status 200 and should respond with user object', () => request
+        .get('/api/users/2')
+        .expect(200)
+        .then(({ body }) => {
+          expect(body.user).to.eql({
+            user_id: 2,
+            username: 'icellusedkars',
+            name: 'sam',
+            avatar_url: 'https://avatars2.githubusercontent.com/u/24604688?s=460&v=4',
+          });
+        }));
+      it('GET - status 400 when user_id not in correct format', () => request
+        .get('/api/users/jhgfhj')
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).to.equal('invalid input syntax');
+        }));
+      it('GET - status 404 when user_id does not exist', () => request
+        .get('/api/users/4569')
+        .expect(404)
+        .then(({ body }) => {
+          expect(body.msg).to.equal('Page does not exist');
+        }));
+      it('DELETE - status 405 when invalid method', () => request
+        .delete('/api/users/3')
+        .expect(405)
+        .then(({ body }) => {
+          expect(body.msg).to.equal('invalid method');
+        }));
+    });
+  });
+  it('GET - status 200 and serves JSON describing all the available endpoints on the API', () => request
+    .get('/api')
+    .expect(200)
+    .then(({ body }) => {
+      expect(typeof body).to.equal('object');
+    }));
+  it('DELETE - status 405 when invalid method', () => request
+    .delete('/api')
+    .expect(405)
+    .then(({ body }) => {
+      expect(body.msg).to.equal('invalid method');
+    }));
 });
