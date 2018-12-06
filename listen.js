@@ -1,5 +1,5 @@
-// process.env.NODE_ENV = 'test';
+const { PORT = 9090 } = process.env;
 const app = require('./app');
 
-app.listen(9090, (err) => {
+app.listen(PORT, () => {
 });
