@@ -138,11 +138,31 @@ describe('/api', () => {
             comment_count: null,
           });
         }));
-      it('GET - status 400 when something in query is not correct like sort_by in not column name', () => request
-        .get(`${route}/mitch/articles?limit=100&sort_by=tle&p=3&sort_ascending=true`)
+      it('GET - status 200 when something in query is not correct like sort_by in not column name and sets to default', () => request
+        .get(`${route}/mitch/articles?limit=100&sort_by=tle&p=1&sort_ascending=trhjue`)
+        .expect(200)
+        .then(({ body }) => {
+          expect(body.articles[4]).to.eql({
+            author: 'icellusedkars',
+            title: 'A',
+            article_id: 6,
+            votes: 0,
+            created_at: '1998-11-20T12:21:54.171Z',
+            topic: 'mitch',
+            comment_count: '1',
+          });
+        }));
+      it('GET - status 400 when p is a string', () => request
+        .get(`${route}/mitch/articles?p=blah`)
         .expect(400)
         .then(({ body }) => {
-          expect(body.msg).to.equal('invalid input');
+          expect(body.msg).to.equal('invalid input syntax');
+        }));
+      it('GET - status 400 when limit is a string', () => request
+        .get(`${route}/mitch/articles?p=1&&limit=nonesonce`)
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).to.equal('invalid input syntax');
         }));
       it('POST - status 201 and accepts an object containing a title , body and a user_id property and responds with the posted article', () => {
         const article = {
@@ -284,11 +304,31 @@ describe('/api', () => {
           comment_count: '1',
         });
       }));
-    it('GET - status 400 when something in query is not correct like sort_by is not column name', () => request
-      .get(`${articleURL}?limit=2&sort_by=bodkjbhky&p=2&sort_ascending=true`)
+    it('GET - status 200 when something in query is not correct like sort_by or sort_ascending so sets to default', () => request
+      .get(`${articleURL}?limit=5&sort_by=bodkjbhky&p=2&sort_ascending=truje`)
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.articles[0]).to.eql({
+          author: 'icellusedkars',
+          title: 'A',
+          article_id: 6,
+          votes: 0,
+          created_at: '1998-11-20T12:21:54.171Z',
+          topic: 'mitch',
+          comment_count: '1',
+        });
+      }));
+    it('GET - status 400 when p is a string', () => request
+      .get(`${articleURL}?limit=yui&p=2&sort_ascending=true`)
       .expect(400)
       .then(({ body }) => {
-        expect(body.msg).to.equal('invalid input');
+        expect(body.msg).to.equal('invalid input syntax');
+      }));
+    it('GET - status 400 when limit is a string', () => request
+      .get(`${articleURL}?limit=5&sort_by=body&p=what`)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).to.equal('invalid input syntax');
       }));
     it('POST - status 405 when invalid method', () => request
       .post(articleURL)
@@ -344,6 +384,21 @@ describe('/api', () => {
             });
           });
       });
+      it('PATCH - status 200 with no body responds with an unmodified article', () => request
+        .patch(`${articleURL}/1`)
+        .expect(200)
+        .then(({ body }) => {
+          expect(body.article).to.eql({
+            article_id: 1,
+            title: 'Living in the shadow of a great man',
+            topic: 'mitch',
+            author: 'butter_bridge',
+            body: 'I find this existence challenging',
+            created_at: '2018-11-15T12:21:54.171Z',
+            votes: 100,
+            comment_count: '13',
+          });
+        }));
       it('PATCH - status 404 when article_id does not exist', () => {
         const insert = { inc_votes: 485 };
         return request
@@ -384,9 +439,9 @@ describe('/api', () => {
             expect(body.msg).to.equal('invalid input syntax');
           });
       });
-      it('DELETE - status 200 and should delete given article and respond with empty object', () => request
+      it('DELETE - status 204 and should delete given article and respond with empty object', () => request
         .delete(`${articleURL}/1`)
-        .expect(200)
+        .expect(204)
         .then(({ body }) => {
           expect(body).to.eql({});
         }));
@@ -578,6 +633,18 @@ describe('/api', () => {
                 });
               });
           });
+          it('PATCH - status 200 with no body responds with an unmodified comment', () => request
+            .patch(`${articleURL}/1/comments/8`)
+            .expect(200)
+            .then(({ body }) => {
+              expect(body.comment).to.eql({
+                comment_id: 8,
+                body: 'Delicious crackerbreads',
+                author: 'icellusedkars',
+                votes: 0,
+                created_at: '2010-11-24T12:36:03.389Z',
+              });
+            }));
           it('PATCH - status 404 when comment_id does not not exist', () => {
             const insert = { inc_votes: -45 };
             return request
@@ -648,9 +715,9 @@ describe('/api', () => {
                 expect(body.msg).to.equal('invalid input syntax');
               });
           });
-          it('DELETE - status 200 and should delete given comment and respond with empty object', () => request
+          it('DELETE - status 204 and should delete given comment and respond with empty object', () => request
             .delete(`${articleURL}/1/comments/8`)
-            .expect(200)
+            .expect(204)
             .then(({ body }) => {
               expect(body).to.eql({});
             }));

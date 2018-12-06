@@ -15,7 +15,8 @@ module.exports = {
         "arrow-body-style": ['warn'],
         "no-param-reassign": 0,
         "prefer-promise-reject-errors": 0,
-        "max-len": 0
+        "max-len": 0,
+        "no-restricted-globals": 0
     }
 
 };

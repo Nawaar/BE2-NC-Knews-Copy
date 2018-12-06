@@ -25,7 +25,8 @@ exports.postComment = (req, res, next) => {
 };
 
 exports.patchCommentVotes = (req, res, next) => {
-  if (req.body.inc_votes) {
+  if ((typeof req.body.inc_votes === 'number' && !isNaN(req.body.inc_votes)) || (Object.keys(req.body).length === 0)) {
+    const { inc_votes = 0 } = req.body;
     connection
       .select('votes')
       .from('comments')
@@ -38,13 +39,11 @@ exports.patchCommentVotes = (req, res, next) => {
         return connection
           .from('comments')
           .where({ comment_id: req.params.comment_id })
-          .update({ votes: votes.votes + req.body.inc_votes });
+          .update({ votes: votes.votes + inc_votes });
       })
       .then(() => generalComments(req, res, next, false, true))
       .catch(next);
-  } else {
-    next({ status: 400, msg: 'invalid input' });
-  }
+  } else if (!req.body.inc_votes) { next({ status: 400, msg: 'invalid input' }); } else { next({ status: 400, msg: 'invalid input syntax' }); }
 };
 
 exports.deleteComment = (req, res, next) => {
@@ -57,7 +56,7 @@ exports.deleteComment = (req, res, next) => {
     .del()
     .then((amount) => {
       if (amount === 0) return Promise.reject({ status: 404, msg: 'Page does not exist' });
-      return res.status(200).json({});
+      return res.status(204).json({});
     })
     .catch(next);
 };

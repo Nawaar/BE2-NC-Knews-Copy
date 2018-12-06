@@ -15,5 +15,4 @@ topicsRouter
   .post(postArticle)
   .all(handle405);
 
-
 module.exports = topicsRouter;
