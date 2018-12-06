@@ -1,21 +1,29 @@
 process.env.NODE_ENV = 'test';
 const { expect } = require('chai');
 const supertest = require('supertest');
+const defaults = require('superagent-defaults');
 const app = require('../app');
 const connection = require('../db/connection');
 
-const request = supertest(app);
+const request = defaults(supertest(app));
 
 describe('/api', () => {
   beforeEach(() => connection.migrate.rollback()
     .then(() => connection.migrate.latest())
-    .then(() => connection.seed.run()));
+    .then(() => connection.seed.run())
+    .then(() => request
+      .post('/api/login')
+      .expect(200)
+      .send({ username: 'icellusedkars', password: 'kjhgfdrtyt6ut7yi8uoihukgyfhd' }))
+    .then(({ body: { token } }) => {
+      request.set('Authorization', `BEARER ${token}`);
+    }));
 
   after(() => {
     connection.destroy();
   });
 
-  it('GET - returns 404 if invalid URL', () => {
+  it('GET - status 404 if invalid URL', () => {
     const URL = '/api/rubbish';
     return request
       .get(URL)
@@ -23,6 +31,58 @@ describe('/api', () => {
       .then(({ body }) => {
         expect(body.msg).to.equal('Page not found');
       });
+  });
+
+  it('GET - status 401 if token is incorrect', () => request
+    .get('/api')
+    .set('Authorization', 'BEARER lihkgjhcfxjb')
+    .expect(401)
+    .then(({ body }) => {
+      expect(body.msg).to.equal('Unauthorised');
+    }));
+  it('GET - status 401 if token is incorrect', () => request
+    .get('/api')
+    .set('Authorization', 'BEAREihkgjhcfxjb')
+    .expect(401)
+    .then(({ body }) => {
+      expect(body.msg).to.equal('Unauthorised');
+    }));
+
+  describe('/login', () => {
+    it('POST - status 200 and responds with an access token given correct username', () => request
+      .post('/api/login')
+      .send({ username: 'icellusedkars', password: 'kjhgfdrtyt6ut7yi8uoihukgyfhd' })
+      .expect(200)
+      .then(({ body }) => {
+        expect(body).to.have.ownProperty('token');
+      }));
+    it('POST - status 401 when given incorrect username', () => request
+      .post('/api/login')
+      .send({ username: 'hi', password: 'kjhgfdrtyt6ut7yi8uoihukgyfhd' })
+      .expect(401)
+      .then(({ body }) => {
+        expect(body.msg).to.equal('Unauthorised');
+      }));
+    it('POST - status 401 when given incorrect password', () => request
+      .post('/api/login')
+      .send({ username: 'icellusedkars', password: 'kjhgfdr7yi8uoihukgyfhd' })
+      .expect(401)
+      .then(({ body }) => {
+        expect(body.msg).to.equal('Unauthorised');
+      }));
+    it('POST - status 400 when input in not in correct format', () => request
+      .post('/api/login')
+      .send({ vghjhv: 'hi', password: 'kjhgfdrtyt6ut7yi8uoihukgyfhd' })
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).to.equal('invalid input');
+      }));
+    it('DELETE - status 405 when incorrect method request', () => request
+      .delete('/api/login')
+      .expect(405)
+      .then(({ body }) => {
+        expect(body.msg).to.equal('invalid method');
+      }));
   });
 
   describe('/topics', () => {

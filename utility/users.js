@@ -2,7 +2,7 @@ const connection = require('../db/connection');
 
 exports.generalUsers = (req, res, next, oneUser) => {
   connection
-    .select('*')
+    .select('name', 'user_id', 'username', 'avatar_url')
     .from('users')
     .modify((userQuery) => {
       if (oneUser) userQuery.where({ user_id: req.params.user_id });

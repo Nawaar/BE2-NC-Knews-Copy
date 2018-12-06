@@ -1,11 +1,29 @@
 const apiRouter = require('express').Router();
+const jwt = require('jsonwebtoken');
 const topicsRouter = require('./topics');
 const articlesRouter = require('./articles');
 const usersRouter = require('./users');
 const { getEndpoints } = require('../controllers/api');
 const { handle405 } = require('../error');
+const { sendToken } = require('../controllers/auth');
+const { JWT_SECRET } = require('../config/auth');
 
-apiRouter.route('/')
+apiRouter
+  .route('/login')
+  .post(sendToken)
+  .all(handle405);
+
+apiRouter.use((req, res, next) => {
+  const { authorization } = req.headers;
+  const token = authorization.split(' ')[1];
+  jwt.verify(token, JWT_SECRET, (err, response) => {
+    if (err) next({ status: 401, msg: 'Unauthorised' });
+    else next();
+  });
+});
+
+apiRouter
+  .route('/')
   .get(getEndpoints)
   .all(handle405);
 

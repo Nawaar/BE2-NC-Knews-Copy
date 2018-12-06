@@ -31,3 +31,8 @@ exports.handle404 = (err, req, res, next) => {
   else if (err.code === '23503' && err.table === 'comments' && err.constraint === 'comments_article_id_foreign') res.status(404).json({ msg: 'Article not found' });
   else next(err);
 };
+
+exports.handle401 = (err, req, res, next) => {
+  if (err.status === 401) res.status(401).json({ msg: err.msg });
+  else next(err);
+};

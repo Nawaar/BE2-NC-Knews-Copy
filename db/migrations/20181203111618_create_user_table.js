@@ -5,6 +5,7 @@ exports.up = function (knex, Promise) {
     userTable.string('username');
     userTable.string('avatar_url');
     userTable.string('name');
+    userTable.string('password');
   });
 };
 

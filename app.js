@@ -1,7 +1,9 @@
 const app = require('express')();
 const bodyParser = require('body-parser');
 const apiRouter = require('./routes/api');
-const { handle422, handle400, handle404 } = require('./error');
+const {
+  handle422, handle400, handle404, handle401,
+} = require('./error');
 
 app.use(bodyParser.json());
 
@@ -14,6 +16,7 @@ app.use('/*', (req, res, next) => {
 app.use(handle422);
 app.use(handle400);
 app.use(handle404);
+app.use(handle401);
 
 app.use((err, req, res, next) => {
   res.status(500).json({ err });
