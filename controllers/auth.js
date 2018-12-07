@@ -1,9 +1,10 @@
+/* eslint global-require: 0 */
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const connection = require('../db/connection');
 
 const ENV = process.env.NODE_ENV || 'development';
-const { JWT_SECRET } = ENV === 'production' ? { JWT_SECRET: process.env.JWT_SECRET } : require('../config/auth')[ENV];
+const { JWT_SECRET = require('../config/auth')[ENV] } = { JWT_SECRET: process.env.JWT_SECRET };
 
 exports.sendToken = (req, res, next) => {
   const { username, password } = req.body;
