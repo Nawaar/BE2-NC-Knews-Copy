@@ -8,7 +8,7 @@ const {
 app.use(bodyParser.json());
 
 app.get('/', (req, res, next) => {
-  res.status(200).render('login');
+  res.status(200).render('login.html');
 });
 
 app.use('/api', apiRouter);
