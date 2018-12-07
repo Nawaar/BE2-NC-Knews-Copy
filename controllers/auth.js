@@ -3,8 +3,7 @@ const bcrypt = require('bcrypt');
 const connection = require('../db/connection');
 
 const ENV = process.env.NODE_ENV || 'development';
-const { JWT_SECRET } = ENV === 'production' ? { JWT_SECRET: process.env.JWT_SECRET } : require('../config/auth');
-
+const { JWT_SECRET } = ENV === 'production' ? { JWT_SECRET: process.env.JWT_SECRET } : require('../config/auth')[ENV];
 
 exports.sendToken = (req, res, next) => {
   const { username, password } = req.body;
