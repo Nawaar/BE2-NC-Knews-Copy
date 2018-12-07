@@ -1,3 +1,4 @@
+/* eslint global-require: 0 */
 const apiRouter = require('express').Router();
 const jwt = require('jsonwebtoken');
 const topicsRouter = require('./topics');
@@ -6,7 +7,9 @@ const usersRouter = require('./users');
 const { getEndpoints } = require('../controllers/api');
 const { handle405 } = require('../error');
 const { sendToken } = require('../controllers/auth');
-const { JWT_SECRET } = require('../config/auth');
+
+const ENV = process.env.NODE_ENV || 'development';
+const { JWT_SECRET = require('../config/auth')[ENV] } = { JWT_SECRET: process.env.JWT_SECRET };
 
 apiRouter
   .route('/login')
