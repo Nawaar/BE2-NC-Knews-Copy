@@ -7,6 +7,10 @@ const {
 
 app.use(bodyParser.json());
 
+app.use('/', (req, res, next) => {
+  res.status(200).render('login');
+});
+
 app.use('/api', apiRouter);
 
 app.use('/*', (req, res, next) => {
