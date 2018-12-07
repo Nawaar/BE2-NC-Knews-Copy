@@ -7,7 +7,7 @@ const {
 
 app.use(bodyParser.json());
 
-app.use('/', (req, res, next) => {
+app.get('/', (req, res, next) => {
   res.status(200).render('login');
 });
 
