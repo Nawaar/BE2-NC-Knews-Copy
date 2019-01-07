@@ -1,14 +1,20 @@
-const app = require('express')();
+const express = require('express');
+const cors = require('cors');
+
+const app = express();
 const bodyParser = require('body-parser');
 const apiRouter = require('./routes/api');
 const {
   handle422, handle400, handle404, handle401,
 } = require('./error');
 
+app.set('view engine', 'ejs');
+app.use(express.static('public'));
 app.use(bodyParser.json());
+app.use(cors());
 
 app.get('/', (req, res, next) => {
-  res.status(200).render('login.html');
+  res.render('login.ejs');
 });
 
 app.use('/api', apiRouter);
