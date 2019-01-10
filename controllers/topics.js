@@ -12,9 +12,10 @@ exports.getTopics = (req, res, next) => {
 
 exports.postTopic = (req, res, next) => {
   if (req.body.slug && req.body.description) {
+    const { slug, description } = req.body;
     connection
       .returning('*')
-      .insert(req.body)
+      .insert({ slug: slug.toLowerCase(), description })
       .into('topics')
       .then(([topic]) => {
         res.status(201).json({ topic });
