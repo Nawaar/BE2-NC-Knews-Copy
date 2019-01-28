@@ -8,10 +8,10 @@ The database is PSQL, and I interactes with it using [Knex](https://knexjs.org).
 
 ## Getting Started
 
-Clone this repository to your local machine and `cd` into it:
+Fork and clone this repository to your local machine and `cd` into it:
 
   ```
-  $ git clone https://github.com/Nawaar/BE2-NC-Knews-Copy.git
+  $ git clone <your fork's URL>
   $ cd BE2-NC-Knews-Copy
   ```
 
