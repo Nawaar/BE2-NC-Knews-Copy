@@ -13,9 +13,9 @@ app.use(express.static('public'));
 app.use(bodyParser.json());
 app.use(cors());
 
-app.get('/', (req, res, next) => {
-  res.render('login.ejs');
-});
+// app.get('/', (req, res, next) => {
+//   res.render('login.ejs');
+// });
 
 app.use('/api', apiRouter);
 

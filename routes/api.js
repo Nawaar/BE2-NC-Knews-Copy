@@ -9,7 +9,7 @@ const { handle405 } = require('../error');
 const { sendToken } = require('../controllers/auth');
 
 const ENV = process.env.NODE_ENV || 'development';
-const { JWT_SECRET = require('../config/auth')[ENV] } = { JWT_SECRET: process.env.JWT_SECRET };
+const { JWT_SECRET = require('../config/auth')[ENV].JWT_SECRET } = { JWT_SECRET: process.env.JWT_SECRET };
 
 apiRouter
   .route('/login')
