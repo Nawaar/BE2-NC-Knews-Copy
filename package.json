@@ -18,7 +18,8 @@
     "seed:prod": "DB_URL=$(heroku config:get DATABASE_URL) knex seed:run --env production",
     "migrate:latest:prod": "DB_URL=$(heroku config:get DATABASE_URL) knex migrate:latest --env production",
     "migrate:rollback:prod": "DB_URL=$(heroku config:get DATABASE_URL) knex migrate:rollback --env production",
-    "start": "node listen.js"
+    "start": "node listen.js",
+    "setup-docker-db": "NODE_ENV=docker knex migrate:latest && NODE_ENV=docker knex seed:run && npm start"
   },
   "repository": {
     "type": "git",
@@ -38,7 +39,7 @@
     "ejs": "^2.6.1",
     "express": "^4.16.4",
     "jsonwebtoken": "^8.4.0",
-    "knex": "^0.19.5",
+    "knex": "^0.15.2",
     "pg": "^7.6.1"
   },
   "devDependencies": {
